@@ -28,5 +28,6 @@ build/
 
 # Compiled resources
 *.icns
+!NMEARelay.icns
 *.ico
 !NMEARelay.ico
