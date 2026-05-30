@@ -1,0 +1,161 @@
+name: Build & Notarize macOS
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # ── Python ──────────────────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyqt6 pyinstaller
+
+      # ── Build .app ──────────────────────────────────────────────────────────
+      - name: Build with PyInstaller
+        run: pyinstaller NMEARelay.spec --clean --noconfirm
+
+      - name: Verify .app exists
+        run: |
+          if [ ! -d "dist/SA3NMEARelay.app" ]; then
+            echo "ERROR: .app bundle not found in dist/"
+            exit 1
+          fi
+          echo "App size: $(du -sh dist/SA3NMEARelay.app | cut -f1)"
+
+      # ── Import Developer ID certificate ─────────────────────────────────────
+      # Requires these GitHub repository secrets:
+      #   MACOS_CERTIFICATE          — Base64-encoded .p12 certificate
+      #   MACOS_CERTIFICATE_PASSWORD — Password for the .p12 file
+      #
+      # To export and encode your certificate on your Mac:
+      #   1. Open Keychain Access → My Certificates
+      #   2. Right-click "Developer ID Application: ..." → Export → .p12 format
+      #   3. Run: base64 -i certificate.p12 | pbcopy
+      #   4. Paste as the MACOS_CERTIFICATE secret value
+      - name: Import signing certificate
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          # Create a temporary keychain
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Decode and import the certificate
+          echo "$MACOS_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$MACOS_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security
+
+          # Add to search list and allow codesign to use it without prompting
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          rm -f "$RUNNER_TEMP/cert.p12"
+
+      # ── Code-sign ───────────────────────────────────────────────────────────
+      - name: Sign .app bundle
+        env:
+          DEVELOPER_ID: ${{ secrets.MACOS_DEVELOPER_ID }}
+        run: |
+          # Sign nested dylibs/so files first
+          find "dist/SA3NMEARelay.app/Contents/Frameworks" \
+            \( -name "*.dylib" -o -name "*.so" \) 2>/dev/null \
+          | while read -r lib; do
+              codesign --force --sign "$DEVELOPER_ID" \
+                --options runtime \
+                --entitlements entitlements.plist \
+                "$lib" 2>/dev/null || true
+            done
+
+          # Sign the main executable
+          codesign --force --sign "$DEVELOPER_ID" \
+            --options runtime \
+            --entitlements entitlements.plist \
+            "dist/SA3NMEARelay.app/Contents/MacOS/SA3NMEARelay"
+
+          # Sign the entire bundle (deep)
+          codesign --force --deep --sign "$DEVELOPER_ID" \
+            --options runtime \
+            --entitlements entitlements.plist \
+            "dist/SA3NMEARelay.app"
+
+          codesign --verify --deep --strict "dist/SA3NMEARelay.app"
+          echo "Code-signing: OK"
+
+      # ── Create DMG ──────────────────────────────────────────────────────────
+      - name: Create DMG
+        run: |
+          TAG="${{ github.ref_name }}"
+          DMG_NAME="SA3NMEARelay-${TAG}-mac.dmg"
+          hdiutil create \
+            -volname "SA3 NMEA Relay" \
+            -srcfolder "dist/SA3NMEARelay.app" \
+            -ov -format UDZO \
+            "dist/${DMG_NAME}"
+          echo "DMG_NAME=${DMG_NAME}" >> "$GITHUB_ENV"
+          echo "Created: dist/${DMG_NAME}"
+
+      # ── Notarize ────────────────────────────────────────────────────────────
+      # Requires these additional secrets:
+      #   APPLE_ID      — your Apple ID email
+      #   APP_PASSWORD  — app-specific password from appleid.apple.com
+      #   TEAM_ID       — your 10-character Team ID
+      - name: Notarize DMG
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+        run: |
+          xcrun notarytool submit "dist/${{ env.DMG_NAME }}" \
+            --apple-id "$APPLE_ID" \
+            --password "$APP_PASSWORD" \
+            --team-id "$TEAM_ID" \
+            --wait
+
+      - name: Staple notarization ticket
+        run: |
+          xcrun stapler staple "dist/${{ env.DMG_NAME }}"
+          xcrun stapler validate "dist/${{ env.DMG_NAME }}"
+          echo "Notarization stapled: OK"
+
+      # ── Clean up keychain ───────────────────────────────────────────────────
+      - name: Remove temporary keychain
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/build.keychain" || true
+
+      # ── Upload to GitHub Release ─────────────────────────────────────────────
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/SA3NMEARelay-*-mac.dmg
+          fail_on_unmatched_files: true
