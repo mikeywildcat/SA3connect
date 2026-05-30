@@ -139,9 +139,9 @@ class TrayManager:
         menu.addSeparator()
 
         # Quit
-        act_quit = QAction(tr("tray_quit", app=_DISPLAY_NAME))
-        act_quit.triggered.connect(QCoreApplication.quit)
-        menu.addAction(act_quit)
+        self._act_quit = QAction(tr("tray_quit", app=_DISPLAY_NAME))
+        self._act_quit.triggered.connect(QCoreApplication.quit)
+        menu.addAction(self._act_quit)
 
         self._tray.setContextMenu(menu)
         self._tray.activated.connect(self._on_activated)
