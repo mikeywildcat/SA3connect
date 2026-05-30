@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import queue
+import select
 import socket
 import threading
 from typing import List
@@ -134,13 +135,20 @@ class TCPRelay(QThread):
             active = []
             for client in self.clients:
                 try:
-                    # MSG_DONTWAIT + MSG_PEEK: non-blocking peek detects clean closes.
-                    # Falls back to send probe for platforms that don't support it.
-                    client.recv(1, socket.MSG_DONTWAIT | socket.MSG_PEEK)
-                    active.append(client)
-                except BlockingIOError:
-                    # No data yet — socket is still alive
-                    active.append(client)
+                    # select with 0 timeout: cross-platform non-blocking readability check
+                    readable, _, _ = select.select([client], [], [], 0)
+                    if readable:
+                        # Readable: peek to see if the connection is still open
+                        data = client.recv(1, socket.MSG_PEEK)
+                        if data:
+                            active.append(client)  # data waiting — alive
+                        else:
+                            try:
+                                client.close()      # empty recv — cleanly closed
+                            except Exception:
+                                pass
+                    else:
+                        active.append(client)       # nothing to read — alive
                 except Exception:
                     try:
                         client.close()
