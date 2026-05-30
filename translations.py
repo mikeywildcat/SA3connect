@@ -378,6 +378,18 @@ _STRINGS: dict[str, dict[str, str]] = {
         "de": "Hilfe",
         "nl": "Help",
     },
+    "menu_file": {
+        "en": "File",
+        "fr": "Fichier",
+        "de": "Datei",
+        "nl": "Bestand",
+    },
+    "menu_quit": {
+        "en": "Quit",
+        "fr": "Quitter",
+        "de": "Beenden",
+        "nl": "Afsluiten",
+    },
     "menu_help": {
         "en": "Help",
         "fr": "Aide",

@@ -105,7 +105,8 @@ class TrayManager:
         self._tray = QSystemTrayIcon(_make_icon())
         self._tray.setToolTip(_DISPLAY_NAME)
 
-        menu = QMenu()
+        self._menu = QMenu()
+        menu = self._menu
 
         # Show / Hide
         self._act_show = QAction(tr("tray_hide"))

@@ -16,7 +16,7 @@ import time
 from collections import deque
 from typing import Optional
 
-from PyQt6.QtCore import QSettings, QThread, Qt, QTimer, QUrl
+from PyQt6.QtCore import QCoreApplication, QSettings, QThread, Qt, QTimer, QUrl
 from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtWidgets import (
     QHBoxLayout,
@@ -160,8 +160,13 @@ class MainWindow(QMainWindow):
             "QStatusBar { background-color: #181825; color: #a6adc8; font-size: 9pt; }"
         )
 
-        # Menu bar – Help menu
+        # Menu bar – File menu
         menu_bar = self.menuBar()
+        file_menu = menu_bar.addMenu(tr("menu_file"))
+        act_quit = file_menu.addAction(tr("menu_quit"))
+        act_quit.triggered.connect(QCoreApplication.quit)
+
+        # Menu bar – Help menu
         help_menu = menu_bar.addMenu(tr("menu_help"))
         act_manual = help_menu.addAction(tr("menu_help_manual"))
         act_manual.triggered.connect(self.open_help)
