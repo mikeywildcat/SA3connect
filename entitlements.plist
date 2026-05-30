@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Network access: connect to Sailaway NMEA gateway (client)
+         and listen for navigation-app connections (server) -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.network.server</key>
+    <true/>
+
+    <!-- Allow user to open/save files (future config import/export) -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+
+    <!-- Required for PyQt6 / Qt JIT compilation under Hardened Runtime -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+
+    <!-- Required: PyInstaller bundles third-party .dylibs that would
+         otherwise be rejected by library validation -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+</dict>
+</plist>

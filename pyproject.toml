@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "sa3-nmea-relay"
+version = "1.0.0"
+description = "Lightweight NMEA relay bridge for Sailaway 3 — corrects proprietary sentences and relays via TCP"
+requires-python = ">=3.11"
+dependencies = [
+    "PyQt6>=6.5",
+]
+
+[project.scripts]
+nmea-relay = "main:main"
+
+[tool.setuptools]
+py-modules = ["main", "app", "connection_panel", "tcp_client", "tcp_relay", "nmea_corrector"]

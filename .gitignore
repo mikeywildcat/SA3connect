@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# PyInstaller
+*.spec.bak
+dist/
+build/
+
+# macOS
+.DS_Store
+*.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Compiled resources
+*.icns
+*.ico

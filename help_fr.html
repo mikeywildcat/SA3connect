@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SA3 NMEA Relay – Aide</title>
+  <style>
+    :root {
+      --bg:        #1e1e2e;
+      --surface:   #313244;
+      --surface2:  #181825;
+      --border:    #45475a;
+      --text:      #cdd6f4;
+      --subtext:   #a6adc8;
+      --green:     #a6e3a1;
+      --blue:      #89b4fa;
+      --yellow:    #f9e2af;
+      --red:       #f38ba8;
+      --mauve:     #cba6f7;
+      --teal:      #94e2d5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 0 0 60px; }
+    .hero { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 32px 48px 28px; display: flex; align-items: center; gap: 20px; }
+    .hero img { width: 64px; height: 64px; border-radius: 14px; }
+    .hero-text h1 { font-size: 26px; font-weight: 700; color: var(--blue); letter-spacing: -0.3px; }
+    .hero-text p { color: var(--subtext); font-size: 13px; margin-top: 4px; }
+    .layout { display: flex; max-width: 1100px; margin: 0 auto; padding: 32px 24px 0; gap: 32px; }
+    nav { width: 200px; flex-shrink: 0; position: sticky; top: 20px; align-self: flex-start; }
+    nav ul { list-style: none; }
+    nav ul li { margin-bottom: 4px; }
+    nav ul li a { display: block; padding: 6px 12px; color: var(--subtext); text-decoration: none; border-radius: 6px; font-size: 13px; transition: background 0.15s, color 0.15s; }
+    nav ul li a:hover { background: var(--surface); color: var(--blue); }
+    nav .nav-section { font-size: 11px; font-weight: 600; color: var(--mauve); text-transform: uppercase; letter-spacing: 0.5px; padding: 16px 12px 4px; }
+    main { flex: 1; min-width: 0; }
+    section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 28px 32px; margin-bottom: 24px; }
+    section h2 { font-size: 18px; font-weight: 700; color: var(--blue); margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    section h3 { font-size: 14px; font-weight: 700; color: var(--mauve); margin: 20px 0 8px; }
+    section p { color: var(--text); margin-bottom: 10px; }
+    section p:last-child { margin-bottom: 0; }
+    .steps { counter-reset: step; padding: 0; list-style: none; }
+    .steps li { counter-increment: step; display: flex; gap: 16px; margin-bottom: 18px; align-items: flex-start; }
+    .steps li::before { content: counter(step); display: flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; background: var(--blue); color: var(--bg); border-radius: 50%; font-weight: 700; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .steps li .step-body { flex: 1; }
+    .steps li .step-title { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .steps li .step-desc { color: var(--subtext); font-size: 13px; }
+    .info-box { border-radius: 8px; padding: 14px 18px; margin: 14px 0; font-size: 13px; border-left: 4px solid; }
+    .info-box.tip  { background: #1e3a2f; border-color: var(--green);  color: var(--green); }
+    .info-box.note { background: #1e2a3a; border-color: var(--blue);   color: var(--blue);  }
+    .info-box.warn { background: #3a2e1e; border-color: var(--yellow); color: var(--yellow);}
+    .info-box strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .info-box span { color: var(--text); }
+    .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    .feature-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .feature-card .fc-title { font-weight: 600; color: var(--teal); margin-bottom: 6px; font-size: 13px; }
+    .feature-card p { font-size: 13px; color: var(--subtext); margin: 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+    th { background: var(--bg); color: var(--mauve); text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); font-weight: 600; }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--subtext); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    td:first-child { color: var(--green); font-family: monospace; font-size: 12px; }
+    td:nth-child(2) { color: var(--yellow); font-family: monospace; font-size: 12px; }
+    code { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-family: 'Menlo', 'Consolas', monospace; font-size: 12px; color: var(--green); }
+    footer { text-align: center; color: var(--subtext); font-size: 12px; padding-top: 16px; }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <img src="heelappicon.png" alt="SA3 NMEA Relay" onerror="this.style.display='none'" />
+  <div class="hero-text">
+    <h1>SA3 NMEA Relay</h1>
+    <p>Manuel d'utilisation &nbsp;·&nbsp; Passerelle NMEA Sailaway 3</p>
+  </div>
+</div>
+
+<div class="layout">
+  <nav>
+    <div class="nav-section">Sommaire</div>
+    <ul>
+      <li><a href="#overview">Présentation</a></li>
+      <li><a href="#requirements">Prérequis</a></li>
+      <li><a href="#first-use">Première utilisation</a></li>
+      <li><a href="#connection">Connexion</a></li>
+      <li><a href="#relay">Relais TCP</a></li>
+      <li><a href="#corrections">Corrections NMEA</a></li>
+      <li><a href="#tray">Barre de menu &amp; icône</a></li>
+      <li><a href="#startup">Démarrage automatique</a></li>
+      <li><a href="#language">Langue</a></li>
+      <li><a href="#troubleshooting">Dépannage</a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <section id="overview">
+      <h2>Qu'est-ce que SA3 NMEA Relay ?</h2>
+      <p>
+        SA3 NMEA Relay relie la passerelle NMEA intégrée du simulateur de voile <strong>Sailaway 3</strong>
+        aux logiciels de navigation réels tels qu'<strong>OpenCPN</strong> ou <strong>qtVlm</strong>.
+        Sailaway envoie des phrases NMEA 0183 via une connexion TCP locale ; cette application les reçoit,
+        applique des corrections pour les rendre compatibles avec les traceurs de cartes standards,
+        et rediffuse le flux corrigé sur un second port TCP auquel se connecte votre logiciel de navigation.
+      </p>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="fc-title">Réception depuis Sailaway</div>
+          <p>Se connecte à la passerelle NMEA de Sailaway (par défaut <code>127.0.0.1:10110</code>) et lit le flux NMEA en direct.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-title">Correction &amp; Filtrage</div>
+          <p>Corrige les phrases non standard et supprime votre propre bateau du flux AIS pour que les autres navires restent visibles.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-title">Rediffusion via relais TCP</div>
+          <p>Sert le flux corrigé sur un port configurable (par défaut <code>10111</code>) auquel OpenCPN ou qtVlm se connecte comme source NMEA.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-title">Fonctionne en arrière-plan</div>
+          <p>Réside dans la barre de menu macOS ou la zone de notification Windows, relayant les données silencieusement pendant votre navigation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="requirements">
+      <h2>Prérequis</h2>
+      <ul style="list-style:disc;padding-left:20px;color:var(--subtext);font-size:13px;line-height:2">
+        <li>Sailaway 3 avec la <strong>passerelle NMEA</strong> activée dans ses paramètres</li>
+        <li>macOS 11 ou ultérieur &nbsp;·&nbsp; Windows 10 ou ultérieur</li>
+        <li>Logiciel de navigation acceptant une source TCP NMEA (OpenCPN, qtVlm, etc.)</li>
+      </ul>
+      <div class="info-box note">
+        <strong>Remarque</strong>
+        <span>SA3 NMEA Relay, Sailaway 3 et votre logiciel de navigation fonctionnent tous sur le même ordinateur.
+        Le relais écoute sur <code>0.0.0.0</code> afin que les traceurs d'autres appareils du même réseau local puissent également se connecter.</span>
+      </div>
+    </section>
+
+    <section id="first-use">
+      <h2>Première utilisation – Étape par étape</h2>
+      <ol class="steps">
+        <li>
+          <div class="step-body">
+            <div class="step-title">Choisir la langue</div>
+            <div class="step-desc">Au tout premier lancement, un sélecteur de langue s'affiche. Choisissez votre langue et cliquez sur OK. Vous pouvez la modifier à tout moment depuis le sélecteur en bas du panneau gauche.</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <div class="step-title">Activer la passerelle NMEA dans Sailaway 3</div>
+            <div class="step-desc">Dans Sailaway, allez dans <strong>Paramètres → Passerelle NMEA</strong> et assurez-vous qu'elle est activée. Notez l'hôte et le port (généralement <code>127.0.0.1</code> et <code>10110</code>).</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <div class="step-title">Saisir les informations de connexion Sailaway</div>
+            <div class="step-desc">Dans l'onglet <strong>Connexion</strong>, vérifiez que l'hôte (<code>127.0.0.1</code>) et le port (<code>10110</code>) correspondent à la configuration de Sailaway.</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <div class="step-title">Cliquer sur Connecter</div>
+            <div class="step-desc">Appuyez sur le bouton <strong>Connecter</strong>. La barre de statut passe au vert une fois la connexion établie. Les phrases NMEA commencent à défiler dans la fenêtre de journal.</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <div class="step-title">Démarrer le relais TCP</div>
+            <div class="step-desc">Passez à l'onglet <strong>Relais TCP</strong>. L'hôte est préréglé sur <code>0.0.0.0</code> et le port par défaut est <code>10111</code>. Cliquez sur <strong>Démarrer le relais</strong>.</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <div class="step-title">Connecter votre logiciel de navigation</div>
+            <div class="step-desc">Dans OpenCPN ou qtVlm, ajoutez une nouvelle connexion <strong>TCP</strong> vers <code>127.0.0.1</code> sur le port <code>10111</code>. La position, le cap, le vent et le trafic AIS apparaîtront sur la carte.</div>
+          </div>
+        </li>
+        <li>
+          <div class="step-body">
+            <div class="step-title">(Facultatif) Activer Connexion automatique &amp; Relais automatique</div>
+            <div class="step-desc">Activez <strong>Connexion automatique</strong> et <strong>Relais automatique</strong>. Au prochain démarrage, tout se connecte automatiquement, sans intervention de votre part.</div>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="connection">
+      <h2>Onglet Connexion</h2>
+      <h3>Hôte &amp; Port</h3>
+      <p>Saisissez l'adresse IP et le port de la passerelle NMEA de Sailaway. La valeur par défaut <code>127.0.0.1:10110</code> convient pour une installation locale. Les adresses précédemment utilisées sont sauvegardées dans l'historique du menu déroulant.</p>
+      <h3>Connecter / Déconnecter</h3>
+      <p><strong>Connecter</strong> ouvre le socket TCP vers Sailaway. En cas de succès, la barre de statut passe au vert. En cas d'échec, l'erreur s'affiche en rouge.</p>
+      <p><strong>Déconnecter</strong> ferme proprement le socket. Le serveur relais continue de fonctionner.</p>
+      <h3>Connexion automatique</h3>
+      <p>Lorsqu'elle est activée, l'application tente automatiquement de se connecter à chaque démarrage. Si Sailaway n'est pas encore lancé, elle réessaie silencieusement toutes les <strong>10 secondes</strong> jusqu'à la réussite.</p>
+      <div class="info-box tip">
+        <strong>Conseil</strong>
+        <span>Si la connexion se coupe de façon inattendue, une notification contextuelle vous demande de vérifier Sailaway et de vous reconnecter manuellement.</span>
+      </div>
+    </section>
+
+    <section id="relay">
+      <h2>Onglet Relais TCP</h2>
+      <h3>Hôte &amp; Port du relais</h3>
+      <p><code>0.0.0.0</code> rend le relais accessible depuis n'importe quel appareil du réseau local. Utilisez <code>127.0.0.1</code> pour le restreindre à la machine locale. Le port par défaut est <code>10111</code>.</p>
+      <h3>Démarrer / Arrêter le relais</h3>
+      <p><strong>Démarrer le relais</strong> ouvre le serveur d'écoute. Plusieurs logiciels de navigation peuvent se connecter simultanément — le nombre de clients est affiché.</p>
+      <h3>Relais automatique</h3>
+      <p>Le serveur relais démarre automatiquement au lancement en utilisant le dernier hôte et port sauvegardés.</p>
+      <div class="info-box note">
+        <strong>Remarque</strong>
+        <span>Le serveur relais fonctionne indépendamment de la connexion Sailaway. Vous pouvez le démarrer avant de vous connecter à Sailaway ; il n'aura simplement aucune donnée à envoyer tant que la connexion n'est pas établie.</span>
+      </div>
+    </section>
+
+    <section id="corrections">
+      <h2>Corrections NMEA appliquées</h2>
+      <p>Sailaway émet plusieurs phrases propriétaires ou non standard. SA3 NMEA Relay les réécrit en équivalents NMEA 0183 standard avant de les transmettre à votre logiciel de navigation.</p>
+      <table>
+        <thead>
+          <tr><th>Phrase d'entrée</th><th>Phrase de sortie</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>$SLCLI</td><td>$IIXDR,A,…,D,ROLL</td><td>Angle de gîte Sailaway → phrase XDR standard. Le signe est inversé pour respecter la convention.</td></tr>
+          <tr><td>$RIRSA</td><td>$IIRSA</td><td>Angle de barre Sailaway → phrase RSA standard avec identifiant d'émetteur corrigé en <code>II</code>.</td></tr>
+          <tr><td>$WIMWV</td><td>$WIMWV (corrigé)</td><td>Les valeurs d'angle de vent supérieures à 180° sont réécrites en valeurs négatives (±180° signés) pour la compatibilité avec OpenCPN.</td></tr>
+          <tr><td>Phrases AIS VDM</td><td><em>(supprimées)</em></td><td>Les rapports de position AIS de votre propre bateau sont supprimés du flux pour qu'il n'apparaisse pas comme une cible AIS distincte.</td></tr>
+        </tbody>
+      </table>
+      <div class="info-box tip">
+        <strong>Conseil</strong>
+        <span>Toutes les autres phrases NMEA (position GPS, SOG, COG, profondeur, cap, etc.) sont transmises sans modification avec leurs sommes de contrôle intactes.</span>
+      </div>
+    </section>
+
+    <section id="tray">
+      <h2>Barre de menu &amp; Zone de notification</h2>
+      <p>SA3 NMEA Relay réside dans la barre de menu macOS ou la zone de notification Windows. Fermer la fenêtre principale la masque plutôt que de quitter l'application — le relais continue de fonctionner en arrière-plan.</p>
+      <h3>Options du menu</h3>
+      <ul style="list-style:disc;padding-left:20px;color:var(--subtext);font-size:13px;line-height:2">
+        <li><strong style="color:var(--text)">Masquer / Afficher</strong> – affiche ou masque la fenêtre principale</li>
+        <li><strong style="color:var(--text)">Barre de menu / Zone de notif. uniquement</strong> – masque définitivement l'icône du Dock (macOS) ; la fenêtre démarre masquée à chaque lancement</li>
+        <li><strong style="color:var(--text)">Lancer au démarrage</strong> – voir ci-dessous</li>
+        <li><strong style="color:var(--text)">Aide</strong> – ouvre ce manuel</li>
+        <li><strong style="color:var(--text)">Quitter</strong> – ferme complètement l'application</li>
+      </ul>
+      <h3>Notifications</h3>
+      <p>Une notification système apparaît peu après le lancement pour confirmer que l'application est active, et à chaque connexion réussie à Sailaway.</p>
+    </section>
+
+    <section id="startup">
+      <h2>Lancer au démarrage</h2>
+      <p>Activez <strong>Lancer au démarrage</strong> depuis le menu de l'icône pour que SA3 NMEA Relay démarre automatiquement à chaque ouverture de session.</p>
+      <p>Combiné avec <strong>Connexion automatique</strong>, <strong>Relais automatique</strong> et le mode <strong>Barre de menu uniquement</strong>, le flux de travail entièrement automatique est :</p>
+      <ol class="steps">
+        <li><div class="step-body"><div class="step-title">Ouvrir une session</div><div class="step-desc">SA3 NMEA Relay démarre automatiquement et se place dans la barre de menu.</div></div></li>
+        <li><div class="step-body"><div class="step-title">Lancer Sailaway 3</div><div class="step-desc">Le relais détecte la passerelle NMEA et se connecte automatiquement (nouvelles tentatives toutes les 10 s si nécessaire).</div></div></li>
+        <li><div class="step-body"><div class="step-title">Ouvrir OpenCPN ou qtVlm</div><div class="step-desc">Votre logiciel de navigation se connecte au relais sur le port <code>10111</code>. Position, vent et trafic AIS apparaissent immédiatement sur la carte.</div></div></li>
+      </ol>
+      <div class="info-box warn">
+        <strong>Note macOS</strong>
+        <span>Le démarrage automatique utilise un LaunchAgent dans <code>~/Library/LaunchAgents/com.sa3nmearelay.plist</code>. Sous Windows, une valeur est écrite dans <code>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</code>.</span>
+      </div>
+    </section>
+
+    <section id="language">
+      <h2>Langue</h2>
+      <p>L'application prend en charge l'anglais, le français, l'allemand et le néerlandais. Le sélecteur de langue se trouve en bas du panneau gauche. Votre choix est sauvegardé et restauré au prochain lancement.</p>
+      <p>Au premier lancement, une fenêtre contextuelle vous invite à choisir une langue avant l'ouverture de la fenêtre principale.</p>
+    </section>
+
+    <section id="troubleshooting">
+      <h2>Dépannage</h2>
+      <h3>Impossible de se connecter à Sailaway</h3>
+      <ul style="list-style:disc;padding-left:20px;color:var(--subtext);font-size:13px;line-height:2">
+        <li>Vérifiez que la passerelle NMEA est activée dans les paramètres de Sailaway.</li>
+        <li>Vérifiez que l'hôte et le port correspondent à la configuration de Sailaway.</li>
+        <li>Assurez-vous qu'aucun pare-feu ne bloque le port concerné.</li>
+      </ul>
+      <h3>Le logiciel de navigation n'affiche aucune donnée</h3>
+      <ul style="list-style:disc;padding-left:20px;color:var(--subtext);font-size:13px;line-height:2">
+        <li>Vérifiez que le relais TCP est actif (la ligne de statut affiche le port et le nombre de clients).</li>
+        <li>Assurez-vous que votre logiciel est configuré pour se connecter à <code>127.0.0.1</code> sur le port <code>10111</code>.</li>
+        <li>Consultez la fenêtre de journal NMEA — si des phrases défilent, le relais reçoit bien des données.</li>
+      </ul>
+      <h3>La notification « Connexion perdue » s'affiche répétitivement</h3>
+      <ul style="list-style:disc;padding-left:20px;color:var(--subtext);font-size:13px;line-height:2">
+        <li>Cela indique que Sailaway ferme la connexion à la passerelle NMEA. Vérifiez que Sailaway est en cours d'exécution et que la passerelle est toujours activée.</li>
+        <li>Activez la connexion automatique pour que l'application se reconnecte automatiquement après le redémarrage de Sailaway.</li>
+      </ul>
+      <h3>L'icône du Dock ne disparaît pas (macOS)</h3>
+      <ul style="list-style:disc;padding-left:20px;color:var(--subtext);font-size:13px;line-height:2">
+        <li>Activez <strong>Barre de menu / Zone de notif. uniquement</strong> depuis le menu contextuel de l'icône pour une utilisation permanente sans icône dans le Dock.</li>
+      </ul>
+      <div class="info-box note">
+        <strong>Fenêtre de journal</strong>
+        <span>Le journal défilant affiche chaque phrase NMEA reçue (en vert) et les messages système (préfixés par <code>#</code>). Utile pour diagnostiquer les problèmes de connexion ou de données.</span>
+      </div>
+    </section>
+
+    <footer>SA3 NMEA Relay &nbsp;·&nbsp; Pour utilisation avec le simulateur de voile Sailaway 3</footer>
+  </main>
+</div>
+</body>
+</html>
