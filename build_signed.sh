@@ -25,11 +25,9 @@ APP_PATH="${DIST_DIR}/${APP_NAME}.app"
 DMG_PATH="${DIST_DIR}/${APP_NAME}.dmg"
 ENTITLEMENTS="entitlements.plist"
 
-# Set DEVELOPER_ID to your "Developer ID Application: Name (TEAMID)" certificate
-# You can list available certificates with:
-#   security find-identity -v -p codesigning
-DEVELOPER_ID="${DEVELOPER_ID:-}"           # export before running, or set here
-APPLE_ID="${APPLE_ID:-}"                   # your Apple ID e-mail
+# Code-signing identity — from: security find-identity -v -p codesigning
+DEVELOPER_ID="${DEVELOPER_ID:-Developer ID Application: MICHAEL JOHN WHITEHOUSE (TX9XVTF5T6)}"
+APPLE_ID="${APPLE_ID:-mikey.whitehouse@alethiamedia.co.uk}"
 APP_PASSWORD="${APP_PASSWORD:-}"           # app-specific password from appleid.apple.com
 TEAM_ID="${TEAM_ID:-TX9XVTF5T6}"          # your 10-char Team ID
 
