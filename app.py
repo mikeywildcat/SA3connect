@@ -12,12 +12,13 @@ Wires together:
 from __future__ import annotations
 
 import logging
+import difflib
 import time
 from collections import deque
 from typing import Optional
 
 from PyQt6.QtCore import QCoreApplication, QSettings, QThread, Qt, QTimer, QUrl
-from PyQt6.QtGui import QDesktopServices
+from PyQt6.QtGui import QColor, QDesktopServices, QTextCharFormat, QTextCursor
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -29,6 +30,7 @@ from PyQt6.QtWidgets import (
     QSizePolicy,
     QSplitter,
     QStatusBar,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -52,7 +54,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("SA3 NMEA Relay")
-        self.resize(760, 520)
+        self.resize(1120, 600)
 
         # Runtime state
         self._tcp_worker: Optional[TcpWorker] = None
@@ -127,16 +129,44 @@ class MainWindow(QMainWindow):
         stats_row.addStretch()
         right_layout.addLayout(stats_row)
 
-        # NMEA log viewer
+        # Received and adjusted outgoing NMEA displays
+        displays = QSplitter(Qt.Orientation.Horizontal)
+
+        received_panel = QWidget()
+        received_layout = QVBoxLayout(received_panel)
+        received_layout.setContentsMargins(0, 0, 0, 0)
+        received_layout.setSpacing(3)
+        self.lbl_received_title = QLabel(tr("nmea_received_title"))
+        self.lbl_received_title.setStyleSheet("color: #cdd6f4; font-weight: bold;")
+        received_layout.addWidget(self.lbl_received_title)
+
         self.log_viewer = QPlainTextEdit()
         self.log_viewer.setReadOnly(True)
+        self.log_viewer.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         self.log_viewer.setMaximumBlockCount(_LOG_MAX_LINES)
-        self.log_viewer.setStyleSheet(
-            "background-color: #11111b; color: #a6e3a1; "
-            "font-family: 'Menlo', 'Consolas', 'Courier New', monospace; "
-            "font-size: 9pt; border: 1px solid #45475a; border-radius: 4px;"
-        )
-        right_layout.addWidget(self.log_viewer)
+        self._style_nmea_view(self.log_viewer, "#a6e3a1")
+        received_layout.addWidget(self.log_viewer)
+
+        outgoing_panel = QWidget()
+        outgoing_layout = QVBoxLayout(outgoing_panel)
+        outgoing_layout.setContentsMargins(0, 0, 0, 0)
+        outgoing_layout.setSpacing(3)
+        self.lbl_outgoing_title = QLabel(tr("nmea_outgoing_title"))
+        self.lbl_outgoing_title.setStyleSheet("color: #cdd6f4; font-weight: bold;")
+        outgoing_layout.addWidget(self.lbl_outgoing_title)
+
+        self.outgoing_viewer = QTextEdit()
+        self.outgoing_viewer.setReadOnly(True)
+        self.outgoing_viewer.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+        self.outgoing_viewer.document().setMaximumBlockCount(_LOG_MAX_LINES)
+        self._style_nmea_view(self.outgoing_viewer, "#a6e3a1")
+        outgoing_layout.addWidget(self.outgoing_viewer)
+
+        displays.addWidget(received_panel)
+        displays.addWidget(outgoing_panel)
+        displays.setStretchFactor(0, 1)
+        displays.setStretchFactor(1, 1)
+        right_layout.addWidget(displays)
 
         # Splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -144,7 +174,7 @@ class MainWindow(QMainWindow):
         splitter.addWidget(right)
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
-        splitter.setSizes([280, 460])
+        splitter.setSizes([280, 840])
 
         root.addWidget(splitter)
 
@@ -170,6 +200,14 @@ class MainWindow(QMainWindow):
         help_menu = menu_bar.addMenu(tr("menu_help"))
         act_manual = help_menu.addAction(tr("menu_help_manual"))
         act_manual.triggered.connect(self.open_help)
+
+    @staticmethod
+    def _style_nmea_view(view, text_color: str):
+        view.setStyleSheet(
+            f"background-color: #11111b; color: {text_color}; "
+            "font-family: 'Menlo', 'Consolas', 'Courier New', monospace; "
+            "font-size: 9pt; border: 1px solid #45475a; border-radius: 4px;"
+        )
 
     # ------------------------------------------------------------------
     # Signal wiring
@@ -304,6 +342,7 @@ class MainWindow(QMainWindow):
 
         # Correct and optionally relay
         corrected = correct_sentence(stripped, self._own_boat_id)
+        self._append_outgoing(stripped, corrected)
         if corrected is not None:
             if self._relay and self._relay.running:
                 self._relay.send_sentence(corrected)
@@ -311,6 +350,46 @@ class MainWindow(QMainWindow):
 
         # Append to log viewer (show original with possible conversion note)
         self._log(stripped)
+
+    def _append_outgoing(self, received: str, corrected: str | None):
+        """Show the adjusted sentence, marking comma-separated fields that changed."""
+        cursor = self.outgoing_viewer.textCursor()
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        document = self.outgoing_viewer.document()
+        if not document.isEmpty():
+            cursor.insertBlock()
+
+        normal_format = QTextCharFormat()
+        normal_format.setForeground(QColor("#a6e3a1"))
+        changed_format = QTextCharFormat(normal_format)
+        changed_format.setForeground(QColor("#1e1e2e"))
+        changed_format.setBackground(QColor("#f9e2af"))
+
+        if corrected is None:
+            filtered_format = QTextCharFormat(normal_format)
+            filtered_format.setForeground(QColor("#f9e2af"))
+            cursor.insertText("[filtered] ", filtered_format)
+            cursor.insertText(received, normal_format)
+        else:
+            outgoing = corrected.strip()
+            before = received.split(",")
+            after = outgoing.split(",")
+            matcher = difflib.SequenceMatcher(a=before, b=after, autojunk=False)
+            changed = set()
+            for tag, _i1, _i2, j1, j2 in matcher.get_opcodes():
+                if tag != "equal":
+                    changed.update(range(j1, j2))
+
+            for index, field in enumerate(after):
+                cursor.insertText(field, changed_format if index in changed else normal_format)
+                if index < len(after) - 1:
+                    cursor.insertText(",", normal_format)
+
+        # Keep the insertion point in the base style for the next live sentence.
+        cursor.setCharFormat(normal_format)
+        self.outgoing_viewer.setTextCursor(cursor)
+        self.outgoing_viewer.ensureCursorVisible()
+        self.outgoing_viewer.horizontalScrollBar().setValue(0)
 
     def _log(self, text: str):
         now = time.time()
@@ -320,6 +399,7 @@ class MainWindow(QMainWindow):
         while self._log_lines and self._log_lines[0][0] < cutoff:
             self._log_lines.popleft()
         self.log_viewer.appendPlainText(text)
+        self.log_viewer.horizontalScrollBar().setValue(0)
 
     def _refresh_status_bar(self):
         self.lbl_rx.setText(tr("stat_received", n=self._sentence_count))
@@ -344,6 +424,8 @@ class MainWindow(QMainWindow):
         """Refresh any main-window strings that aren't in ConnectionPanel."""
         self.lbl_rx.setText(tr("stat_received", n=self._sentence_count))
         self.lbl_relayed.setText(tr("stat_relayed", n=self._relayed_count))
+        self.lbl_received_title.setText(tr("nmea_received_title"))
+        self.lbl_outgoing_title.setText(tr("nmea_outgoing_title"))
         if self._own_boat_id:
             self.lbl_boat_id.setText(tr("stat_boat_id", bid=self._own_boat_id))
         else:

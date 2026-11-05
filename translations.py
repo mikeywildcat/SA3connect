@@ -218,6 +218,18 @@ _STRINGS: dict[str, dict[str, str]] = {
         "de": "Boot-ID: –",
         "nl": "Boot-ID: –",
     },
+    "nmea_received_title": {
+        "en": "Received NMEA",
+        "fr": "NMEA reçu",
+        "de": "Empfangenes NMEA",
+        "nl": "Ontvangen NMEA",
+    },
+    "nmea_outgoing_title": {
+        "en": "Outgoing adjusted NMEA  ·  highlighted fields changed",
+        "fr": "NMEA ajusté sortant  ·  champs modifiés en surbrillance",
+        "de": "Angepasstes NMEA ausgehend  ·  geänderte Felder markiert",
+        "nl": "Uitgaande aangepaste NMEA  ·  gewijzigde velden gemarkeerd",
+    },
 
     # ---- TCP Relay tab ----
     "relay_group": {
